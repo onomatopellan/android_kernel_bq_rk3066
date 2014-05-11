@@ -856,7 +856,11 @@ static struct sensor_platform_data mma7660_info = {
 	.irq_enable = 1,
 	.poll_delay_ms = 20,
         .init_platform_hw = mma7660_init_platform_hw,
-        .orientation = {1, 0, 0, 0, -1, 0, 0, 0, -1},
+#if defined(CONFIG_MALATA_D7007_INVERTED)
+        .orientation = { 0, 1, 0, 1, 0, 0, 0, 0,-1},//0 false
+#else
+        .orientation = {1, 0, 0, 0, -1, 0, 0, 0, -1},//270 true
+#endif
 };
 #elif defined(CONFIG_MALATA_C7019B)
 static struct sensor_platform_data mma7660_info = {
