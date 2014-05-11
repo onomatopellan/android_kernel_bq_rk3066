@@ -16,8 +16,8 @@ module_param(rksn_debug, int, S_IRUGO|S_IWUSR|S_IWGRP);
 	if (rksn_debug >= level) 					\
 	    printk("rk_sn_init:" fmt , ## arg); } while (0)
 
-#define  BLUE_MAC "/data/blue_mac"
-#define  SN_FILE  "/data/sn"
+#define  BLUE_MAC "/data/misc/bluetooth/bt_addr"
+#define  SN_FILE  "/data/misc/sn"
 
 struct rockchip_sn{
 	struct timer_list sn_timer;
@@ -157,7 +157,7 @@ static void SN_get(struct work_struct *work)
     
 	if(fd < 0)
     	{
-		printk("%s SN_get: open file /data/sn failed\n",__FILE__);
+		printk("%s SN_get: open file /data/misc/sn failed\n",__FILE__);
 		return;
 	}
 	sys_write(fd, (const char __user *)SN, *pSnLen);
@@ -168,7 +168,7 @@ static void SN_get(struct work_struct *work)
 
 	if(fd < 0)
     	{
-		printk("%s SN_get: open file /data/blue_mac failed\n",__FILE__);
+		printk("%s SN_get: open file /data/misc/bluetooth/bt_addr failed\n",__FILE__);
 		return;
 	}
             for(i=499; i<=504; i++)
