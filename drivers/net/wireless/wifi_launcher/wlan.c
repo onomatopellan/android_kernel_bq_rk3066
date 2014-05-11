@@ -29,9 +29,9 @@ static int wifi_launcher_init(void)
 {
   int ret;
 
-  printk("=======================================================\n");
-  printk("==== Launching Wi-Fi driver! (Powered by Rockchip) ====\n");
-  printk("=======================================================\n");
+//  printk("=======================================================\n");
+//  printk("==== Launching Wi-Fi driver! (Powered by Rockchip) ====\n");
+//  printk("=======================================================\n");
 
 #ifdef OLD_WIFI_IFACE
   ret = mv88w8686_if_sdio_init_module();
@@ -48,9 +48,9 @@ static int wifi_launcher_init(void)
 
 static void wifi_launcher_exit(void) 
 {
-  printk("=======================================================\n");
-  printk("== Dis-launching Wi-Fi driver! (Powered by Rockchip) ==\n");
-  printk("=======================================================\n");
+//  printk("=======================================================\n");
+//  printk("== Dis-launching Wi-Fi driver! (Powered by Rockchip) ==\n");
+//  printk("=======================================================\n");
 
 #ifdef OLD_WIFI_IFACE
   mv88w8686_if_sdio_exit_module();
