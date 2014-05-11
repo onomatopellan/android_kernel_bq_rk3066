@@ -10,7 +10,7 @@ config DEINTERLACE
 	depends on 	RK29_IPP	
 	default y
 	help 
-					Mobile phone dose not support deinterlacing
+	  Mobile phone dose not support deinterlacing
 	
 endmenu
 
