@@ -1113,6 +1113,12 @@ config TOUCHSCREEN_FT5606_MALATA
 
 	  If unsure, say N(but it's safe to say "Y").
 
+         config TOUCHSCREEN_FT5606_INVERTED
+                 bool "Malata FT5606 touchscreen inverted"
+                 depends on TOUCHSCREEN_FT5606_MALATA
+                 help
+                   Invert the orientation of the touchscreen (both axis).
+
 config ATMEL_MXT1386
         tristate "ATMEL_MXT1386 touchscreen panel support"
         depends on I2C

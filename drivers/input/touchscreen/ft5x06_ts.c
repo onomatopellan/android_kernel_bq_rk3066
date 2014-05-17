@@ -981,83 +981,133 @@ static void ft5x0x_report_value(void)
 	switch(event->touch_point) {
 		case 10:
 			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x10);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y10);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[9]);
-			input_mt_sync(data->input_dev);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x10);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y10);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x10);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y10);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[9]);
+                        input_mt_sync(data->input_dev);
 
-		case 9:
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x9);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y9);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[8]);
-			input_mt_sync(data->input_dev);
+                case 9:
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x9);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y9);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x9);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y9);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[8]);
+                        input_mt_sync(data->input_dev);
 
-		case 8:
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x8);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y8);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[7]);
-			input_mt_sync(data->input_dev);
+                case 8:
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x8);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y8);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x8);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y8);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[7]);
+                        input_mt_sync(data->input_dev);
 
-		case 7:
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x7);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y7);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[6]);
-			input_mt_sync(data->input_dev);
+                case 7:
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x7);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y7);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x7);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y7);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[6]);
+                        input_mt_sync(data->input_dev);
 
-		case 6:
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x6);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y6);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[5]);
-			input_mt_sync(data->input_dev);
-		case 5:
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x5);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y5);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[4]);
-			input_mt_sync(data->input_dev);
+                case 6:
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x6);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y6);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x6);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y6);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[5]);
+                        input_mt_sync(data->input_dev);
+                case 5:
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x5);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y5);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x5);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y5);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[4]);
+                        input_mt_sync(data->input_dev);
 
-		case 4:
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x4);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y4);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[3]);
-			input_mt_sync(data->input_dev);
+                case 4:
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x4);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y4);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x4);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y4);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[3]);
+                        input_mt_sync(data->input_dev);
 
-		case 3:
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x3);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y3);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[2]);
-			input_mt_sync(data->input_dev);
+                case 3:
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x3);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y3);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x3);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y3);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[2]);
+                        input_mt_sync(data->input_dev);
 
-		case 2:
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x2);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y2);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[1]);
-			input_mt_sync(data->input_dev);
+                case 2:
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x2);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y2);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x2);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y2);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[1]);
+                        input_mt_sync(data->input_dev);
 
-		case 1:
-		    input_report_key(data->input_dev, BTN_TOUCH, 1);
-			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x1);
-			input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y1);
-			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
-			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[0]);
-			input_mt_sync(data->input_dev);
+                case 1:
+                 input_report_key(data->input_dev, BTN_TOUCH, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, event->pressure);
+                        #if defined(CONFIG_TOUCHSCREEN_FT5606_INVERTED)
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, SCREEN_MAX_X -event->x1);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, SCREEN_MAX_Y -event->y1);
+                        #else
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_Y, event->x1);
+                        input_report_abs(data->input_dev, ABS_MT_POSITION_X, event->y1);
+                        #endif
+                        input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR, 1);
+                        input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, event->point_track_id[0]);
+                        input_mt_sync(data->input_dev);
 
 
 		default:

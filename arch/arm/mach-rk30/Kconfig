@@ -180,6 +180,9 @@ menuconfig MALATA_D7007_INVERTED
 menuconfig MALATA_D7006
 	bool "Malata D7006 Project"
 
+menuconfig MALATA_D7006_INVERTED
+	bool "Malata D7006 INVERTED Project"
+
 menuconfig MALATA_C1016
 	bool "Malata C1016 Project"
 
