@@ -282,6 +282,7 @@ struct rk30_adc_battery_platform_data {
 
 	int usb_det_pin;
 	int dc_det_pin;
+	int charge_type_pin;
 	int batt_low_pin;
 	int charge_ok_pin;
 	int charge_set_pin;
