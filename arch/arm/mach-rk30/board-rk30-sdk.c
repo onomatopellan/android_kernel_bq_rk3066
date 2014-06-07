@@ -1283,6 +1283,12 @@ struct platform_device pwm_regulator_device[1] = {
 #include "board-rk30-sdk-vmac.c"
 #endif
 
+//from BQ JB
+struct platform_device charge_lowerpower_device = {
+    .name   = "charge_lowerpower",
+	.id = -1,
+};
+
 #ifdef CONFIG_RFKILL_RK
 // bluetooth rfkill device, its driver in net/rfkill/rfkill-rk.c
 static struct rfkill_rk_platform_data rfkill_rk_platdata = {
@@ -1373,6 +1379,7 @@ static struct platform_device *devices[] __initdata = {
 #ifdef CONFIG_RFKILL_RK
 	&device_rfkill_rk,
 #endif
+	&charge_lowerpower_device,
 };
 
 static int rk_platform_add_display_devices(void)

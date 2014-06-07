@@ -1,4 +1,3 @@
-	 
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/slab.h>
@@ -64,7 +63,7 @@ static void add_bootmode_charger_to_cmdline(void)
 
 //display charger logo in kernel CAPACITY
 static DEFINE_MUTEX(power_suspend_lock);
-//extern void charge_earlysuspend_enter(int status);
+extern void charge_earlysuspend_enter(int status);
 ssize_t enter_early_charging(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -75,7 +74,7 @@ ssize_t enter_early_charging(struct device *dev,
 	{
 		printk("%s..with suspend\n",__FUNCTION__);
 		mutex_lock(&power_suspend_lock);
-		//charge_earlysuspend_enter(0);
+		charge_earlysuspend_enter(0);
 		mutex_unlock(&power_suspend_lock);
 		return count;
 	}
@@ -85,7 +84,7 @@ ssize_t enter_early_charging(struct device *dev,
 		{
 			printk("%s..with resume\n",__FUNCTION__);
 			mutex_lock(&power_suspend_lock);
-			//charge_earlysuspend_enter(1);
+			charge_earlysuspend_enter(1);
 			mutex_unlock(&power_suspend_lock);
 			return count;
 		}
@@ -168,4 +167,4 @@ static int  __init start_charge_logo_display(void)
 } 
 
 //subsys_initcall(start_charge_logo_display);
-fs_initcall(start_charge_logo_display);
+module_init(start_charge_logo_display);
