@@ -34,7 +34,7 @@ Comprehensive camera device registration:
                              mclk)\           // sensor input clock rate, 24 or 48
                           
 */
-#if defined(CONFIG_MALATA_D7008)
+#if defined(CONFIG_MALATA_D7007) || defined(CONFIG_MALATA_D7008)
 #define FRONT_ORI 0
 #define BACK_ORI  INVALID_VALUE
 #else 
