@@ -84,6 +84,8 @@
 //#include "board-rk30-maxwell2plus-camera.c"
 #endif
 
+#define RK30_FB0_MEM_SIZE 8*SZ_1M
+
 #include <plat/key.h>
 static struct rk29_keys_button key_button[] = {
 	{
@@ -337,9 +339,9 @@ static struct rk29_bl_info rk29_bl_info = {
 	.io_deinit = rk29_backlight_io_deinit,
 	.pwm_suspend = rk29_backlight_pwm_suspend,
 	.pwm_resume = rk29_backlight_pwm_resume,
-//#if defined(CONFIG_BQ_MAXWELL2LITE) || defined(CONFIG_BQ_MAXWELL2PLUS)
+#if defined(CONFIG_BQ_MAXWELL2LITE) || defined(CONFIG_BQ_MAXWELL2PLUS)
 	.min_brightness = 15,
-//#endif
+#endif
 };
 
 static struct platform_device rk29_device_backlight = {
@@ -1241,7 +1243,7 @@ struct regulator_init_data pwm_regulator_init_dcdc[1] =
 		.constraints = {
 			.name = "PWM_DCDC1",
 			.min_uV = 600000,
-			.max_uV = 1800000, // 0.6-1.8V
+			.max_uV = 1800000,	//0.6-1.8V
 			.apply_uV = true,
 			.valid_ops_mask = REGULATOR_CHANGE_STATUS | REGULATOR_CHANGE_VOLTAGE,
 		},
@@ -1249,7 +1251,6 @@ struct regulator_init_data pwm_regulator_init_dcdc[1] =
 		.consumer_supplies = pwm_dcdc1_consumers,
 	},
 };
-
 static struct pwm_platform_data pwm_regulator_info[1] = {
 	{
 		.pwm_id = 3,
@@ -1259,11 +1260,11 @@ static struct pwm_platform_data pwm_regulator_info[1] = {
 		.pwm_iomux_gpio = GPIO0D_GPIO0D6,
 		.pwm_voltage = 1100000,
 		.suspend_voltage = 1050000,
-		.min_uV = 950000,
+		.min_uV = 1000000,
 		.max_uV	= 1400000,
-		.coefficient = 455, // 45.5%
+		.coefficient = 455,	//45.5%
 		.pwm_voltage_map = pwm_voltage_map,
-		.init_data = &pwm_regulator_init_dcdc[0],
+		.init_data	= &pwm_regulator_init_dcdc[0],
 	},
 };
 
@@ -1271,8 +1272,8 @@ struct platform_device pwm_regulator_device[1] = {
 	{
 		.name = "pwm-voltage-regulator",
 		.id = 0,
-		.dev = {
-		     .platform_data = &pwm_regulator_info[0],
+		.dev		= {
+			.platform_data = &pwm_regulator_info[0],
 		}
 	},
 };
@@ -1496,6 +1497,52 @@ void __sramfunc board_pmu_resume(void)
 	#endif
 }
 
+int __sramdata gpio0d7_iomux,gpio0d7_do,gpio0d7_dir,gpio0d7_en;
+
+void __sramfunc rk30_pwm_logic_suspend_voltage(void)
+{
+#ifdef CONFIG_RK30_PWM_REGULATOR
+
+//	int gpio0d7_iomux,gpio0d7_do,gpio0d7_dir,gpio0d7_en;
+	sram_udelay(10000);
+	gpio0d7_iomux = readl_relaxed(GRF_GPIO0D_IOMUX);
+	gpio0d7_do = grf_readl(GRF_GPIO0H_DO);
+	gpio0d7_dir = grf_readl(GRF_GPIO0H_DIR);
+	gpio0d7_en = grf_readl(GRF_GPIO0H_EN);
+
+	writel_relaxed((1<<30), GRF_GPIO0D_IOMUX);
+	grf_writel((1<<31)|(1<<15), GRF_GPIO0H_DIR);
+	grf_writel((1<<31)|(1<<15), GRF_GPIO0H_DO);
+	grf_writel((1<<31)|(1<<15), GRF_GPIO0H_EN);
+#endif 
+}
+void __sramfunc rk30_pwm_logic_resume_voltage(void)
+{
+#ifdef CONFIG_RK30_PWM_REGULATOR
+	writel_relaxed((1<<30)|gpio0d7_iomux, GRF_GPIO0D_IOMUX);
+	grf_writel((1<<31)|gpio0d7_en, GRF_GPIO0H_EN);
+	grf_writel((1<<31)|gpio0d7_dir, GRF_GPIO0H_DIR);
+	grf_writel((1<<31)|gpio0d7_do, GRF_GPIO0H_DO);
+	sram_udelay(10000);
+
+#endif
+
+}
+extern void pwm_suspend_voltage(void);
+extern void pwm_resume_voltage(void);
+void  rk30_pwm_suspend_voltage_set(void)
+{
+#ifdef CONFIG_RK30_PWM_REGULATOR
+	pwm_suspend_voltage();
+#endif
+}
+void  rk30_pwm_resume_voltage_set(void)
+{
+#ifdef CONFIG_RK30_PWM_REGULATOR
+	pwm_resume_voltage();
+#endif
+}
+
 #ifdef CONFIG_I2C2_RK30
 static struct i2c_board_info __initdata i2c2_info[] = {
 #if defined(CONFIG_TOUCHSCREEN_GT811_MALATA)
@@ -1665,8 +1712,8 @@ static void __init rk30_reserve(void)
 	rk30_ion_pdata.heaps[0].base = board_mem_reserve_add("ion", ION_RESERVE_SIZE);
 #endif
 #ifdef CONFIG_FB_ROCKCHIP
-	resource_fb[0].start = board_mem_reserve_add("fb0 buf", get_fb_size());
-	resource_fb[0].end = resource_fb[0].start + get_fb_size()- 1;
+	resource_fb[0].start = board_mem_reserve_add("fb0 buf", RK30_FB0_MEM_SIZE);
+	resource_fb[0].end = resource_fb[0].start + RK30_FB0_MEM_SIZE - 1;
 #if 0
 	resource_fb[1].start = board_mem_reserve_add("ipp buf", RK30_FB0_MEM_SIZE);
 	resource_fb[1].end = resource_fb[1].start + RK30_FB0_MEM_SIZE - 1;

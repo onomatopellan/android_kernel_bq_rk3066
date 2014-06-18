@@ -126,7 +126,9 @@ static void android_unbind_config(struct usb_configuration *c);
 static char manufacturer_string[256];
 static char product_string[256];
 static char serial_string[256];
-
+#ifdef CONFIG_BATTERY_RK30_USB_AND_CHARGE
+int usb_enum_st = 0;
+#endif
 /* String Table */
 static struct usb_string strings_dev[] = {
 	[STRING_MANUFACTURER_IDX].s = manufacturer_string,
@@ -173,9 +175,10 @@ static void android_work(struct work_struct *data)
 	unsigned long flags;
 
 	spin_lock_irqsave(&cdev->lock, flags);
-        if (cdev->config)
+        if (cdev->config){
 		uevent_envp = configured;
-	else if (dev->connected != dev->sw_connected)
+		usb_enum_st = 1;
+	}else if (dev->connected != dev->sw_connected)
 		uevent_envp = dev->connected ? connected : disconnected;
 	dev->sw_connected = dev->connected;
 	spin_unlock_irqrestore(&cdev->lock, flags);
