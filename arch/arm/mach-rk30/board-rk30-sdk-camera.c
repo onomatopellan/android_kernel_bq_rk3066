@@ -42,7 +42,7 @@ Comprehensive camera device registration:
 #define BACK_ORI  INVALID_VALUE
 #endif
 static struct rkcamera_platform_data new_camera[] = {      
-    new_camera_device_add_ori(RK29_CAM_SENSOR_GC2035,
+    /*new_camera_device_add_ori(RK29_CAM_SENSOR_GC2035,
                         back,
                         BACK_ORI,
                         RK30_PIN1_PB6,
@@ -92,7 +92,7 @@ static struct rkcamera_platform_data new_camera[] = {
                       0,
                       0,
                       3,
-                      0),
+                      0),*/
      
     new_camera_device_add_ori(RK29_CAM_SENSOR_GC0308,
                       front,
@@ -104,7 +104,7 @@ static struct rkcamera_platform_data new_camera[] = {
                       0),
     
     
-                     
+    /*                 
     new_camera_device_add_ori(RK29_CAM_SENSOR_GT2005_FRONT,
                       front,
                       FRONT_ORI,
@@ -152,7 +152,7 @@ static struct rkcamera_platform_data new_camera[] = {
                       0,
                       0,
                       3,
-                      0),
+                      0),*/
          
     new_camera_device_end
 };

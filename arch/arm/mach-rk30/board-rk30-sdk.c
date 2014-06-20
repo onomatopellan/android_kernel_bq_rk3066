@@ -82,6 +82,7 @@
 #include "board-rk30-maxwell2lite-camera.c"
 #else
 //#include "board-rk30-maxwell2plus-camera.c"
+#include "board-rk30-sdk-camera.c"
 #endif
 
 #define RK30_FB0_MEM_SIZE 8*SZ_1M
@@ -1615,10 +1616,11 @@ static void __init rk30_i2c_register_board_info(void)
 #ifdef CONFIG_I2C_GPIO_RK30
 	i2c_register_board_info(5, i2c_gpio_info, ARRAY_SIZE(i2c_gpio_info));
 #endif
-}
 #if defined(CONFIG_TOUCHSCREEN_GT811_MALATA)
 	goodix_init_platform_hw();
 #endif
+}
+
 // end of i2c
 
 #define POWER_ON_PIN RK30_PIN6_PB0 // power_hold
@@ -1725,7 +1727,7 @@ static void __init rk30_reserve(void)
 #endif
 #endif
 #ifdef CONFIG_VIDEO_RK29
-	//rk30_camera_request_reserve_mem();
+	rk30_camera_request_reserve_mem();
 #endif
 	board_mem_reserved();
 }

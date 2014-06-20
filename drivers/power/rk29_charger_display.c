@@ -166,5 +166,6 @@ static int  __init start_charge_logo_display(void)
 	return 0;
 } 
 
-//subsys_initcall(start_charge_logo_display);
+//subsys_initcall_sync(start_charge_logo_display);
 module_init(start_charge_logo_display);
+
