@@ -54,10 +54,10 @@ uint config_msg_level = CONFIG_ERROR_LEVEL;
 #define FW_TYPE_AG      1
 
 const static char *bcm4330b2_fw_name[] = {
-	"fw_RK903b2.bin",
-	"fw_RK903b2_apsta.bin",
-	"fw_RK903b2_p2p.bin",
-	"fw_RK903b2_mfg.bin"
+	"fw_bcmdhd.bin",
+	"fw_bcmdhd_apsta.bin",
+	"fw_bcmdhd_p2p.bin",
+	"fw_bcmdhd_mfg.bin"
 };
 
 const static char *bcm4330b2ag_fw_name[] = {
