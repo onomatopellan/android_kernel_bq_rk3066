@@ -45,6 +45,10 @@
 #include <mach/pmu.h>
 #include <mach/cru.h>
 
+#if defined(CONFIG_ARCH_RK319X)
+#include <mach/grf.h>
+#endif
+
 #include <plat/vpu_service.h>
 #include <plat/cpu.h>
 
@@ -90,7 +94,11 @@ static struct timeval pp_start,  pp_end;
 
 #define MHZ					(1000*1000)
 
+#if defined(CONFIG_ARCH_RK319X)
+#define VCODEC_PHYS             RK319X_VCODEC_PHYS
+#else
 #define VCODEC_PHYS				(0x10104000)
+#endif
 
 #define REG_NUM_9190_DEC			(60)
 #define REG_NUM_9190_PP				(41)
@@ -133,9 +141,10 @@ VPU_HW_INFO_E vpu_hw_set[] = {
 #define PP_INTERRUPT_REGISTER	   		60
 #define ENC_INTERRUPT_REGISTER	   		1
 
-#define DEC_INTERRUPT_BIT			 0x100
-#define PP_INTERRUPT_BIT			 0x100
-#define ENC_INTERRUPT_BIT			 0x1
+#define DEC_INTERRUPT_BIT			0x100
+#define DEC_BUFFER_EMPTY_BIT			0x4000
+#define PP_INTERRUPT_BIT			0x100
+#define ENC_INTERRUPT_BIT			0x1
 
 #define VPU_REG_EN_ENC				14
 #define VPU_REG_ENC_GATE			2
@@ -212,6 +221,7 @@ typedef struct vpu_service_info {
 	VPU_HW_INFO_E		*hw_info;
 	unsigned long		reg_size;
 	bool			auto_freq;
+	bool			bug_dec_addr;
 	atomic_t		freq_status;
 } vpu_service_info;
 
@@ -249,11 +259,11 @@ static void vpu_get_clk(void)
 	}
 	aclk_ddr_vepu 	= clk_get(NULL, "aclk_ddr_vepu");
 	if (IS_ERR(aclk_ddr_vepu)) {
-		pr_err("failed on clk_get aclk_ddr_vepu\n");
+		;//pr_err("failed on clk_get aclk_ddr_vepu\n");
 	}
 	hclk_cpu_vcodec	= clk_get(NULL, "hclk_cpu_vcodec");
 	if (IS_ERR(hclk_cpu_vcodec)) {
-		pr_err("failed on clk_get hclk_cpu_vcodec\n");
+		;//pr_err("failed on clk_get hclk_cpu_vcodec\n");
 	}
 }
 
@@ -404,9 +414,14 @@ static void vpu_service_power_on(void)
 	service.enabled = true;
 	printk("vpu: power on\n");
 
-	clk_enable(aclk_vepu);
+    clk_enable(aclk_vepu);
 	clk_enable(hclk_vepu);
 	clk_enable(hclk_cpu_vcodec);
+#if defined(CONFIG_ARCH_RK319X)
+    /// select aclk_vepu as vcodec clock source. 
+    #define BIT_VCODEC_SEL  (1<<7)
+    writel_relaxed(readl_relaxed(RK319X_GRF_BASE + GRF_SOC_CON1) | (BIT_VCODEC_SEL) | (BIT_VCODEC_SEL << 16), RK319X_GRF_BASE + GRF_SOC_CON1);
+#endif
 	udelay(10);
 #ifdef CONFIG_ARCH_RK29
 	pmu_set_power_domain(PD_VCODEC, true);
@@ -438,6 +453,10 @@ static vpu_reg *reg_init(vpu_session *session, void __user *src, unsigned long s
 		return NULL;
 	}
 
+	if (size > service.reg_size) {
+		printk("warning: vpu reg size %lu is larger than hw reg size %lu\n", size, service.reg_size);
+		size = service.reg_size;
+	}
 	reg->session = session;
 	reg->type = session->type;
 	reg->size = size;
@@ -458,17 +477,19 @@ static vpu_reg *reg_init(vpu_session *session, void __user *src, unsigned long s
 	mutex_unlock(&service.lock);
 
 	if (service.auto_freq) {
-		if (reg->type == VPU_DEC || reg->type == VPU_DEC_PP) {
-			if (reg_check_rmvb_wmv(reg)) {
-				reg->freq = VPU_FREQ_200M;
-			} else {
-				if (reg_check_interlace(reg)) {
-					reg->freq = VPU_FREQ_400M;
+		if (!soc_is_rk2928g()) {
+			if (reg->type == VPU_DEC || reg->type == VPU_DEC_PP) {
+				if (reg_check_rmvb_wmv(reg)) {
+					reg->freq = VPU_FREQ_200M;
+				} else {
+					if (reg_check_interlace(reg)) {
+						reg->freq = VPU_FREQ_400M;
+					}
 				}
 			}
-		}
-		if (reg->type == VPU_PP) {
-			reg->freq = VPU_FREQ_400M;
+			if (reg->type == VPU_PP) {
+				reg->freq = VPU_FREQ_400M;
+			}
 		}
 	}
 
@@ -540,7 +561,7 @@ static void reg_from_run_to_done(vpu_reg *reg)
 	}
 	atomic_sub(1, &reg->session->task_running);
 	atomic_sub(1, &service.total_running);
-	wake_up_interruptible_sync(&reg->session->wait);
+	wake_up(&reg->session->wait);
 }
 
 static void vpu_service_set_freq(vpu_reg *reg)
@@ -568,7 +589,11 @@ static void vpu_service_set_freq(vpu_reg *reg)
 		//printk("default: 400M\n");
 	} break;
 	default : {
-		clk_set_rate(aclk_vepu, 300*MHZ);
+		if (soc_is_rk2928g()) {
+			clk_set_rate(aclk_vepu, 400*MHZ);
+		} else {
+			clk_set_rate(aclk_vepu, 300*MHZ);
+		}
 		//printk("default: 300M\n");
 	} break;
 	}
@@ -587,12 +612,17 @@ static void reg_copy_to_hw(vpu_reg *reg)
 	case VPU_ENC : {
 		int enc_count = service.hw_info->enc_reg_num;
 		u32 *dst = (u32 *)enc_dev.hwregs;
-#if defined(CONFIG_ARCH_RK30)
-		cru_set_soft_reset(SOFT_RST_CPU_VCODEC, true);
-		cru_set_soft_reset(SOFT_RST_VCODEC_AHB, true);
-		cru_set_soft_reset(SOFT_RST_VCODEC_AHB, false);
-		cru_set_soft_reset(SOFT_RST_CPU_VCODEC, false);
+		if (service.bug_dec_addr) {
+#if !defined(CONFIG_ARCH_RK319X)
+			cru_set_soft_reset(SOFT_RST_CPU_VCODEC, true);
 #endif
+			cru_set_soft_reset(SOFT_RST_VCODEC_AHB, true);
+			cru_set_soft_reset(SOFT_RST_VCODEC_AHB, false);
+#if !defined(CONFIG_ARCH_RK319X)
+			cru_set_soft_reset(SOFT_RST_CPU_VCODEC, false);
+#endif
+		}
+
 		service.reg_codec = reg;
 
 		dst[VPU_REG_EN_ENC] = src[VPU_REG_EN_ENC] & 0x6;
@@ -800,7 +830,6 @@ static long vpu_service_ioctl(struct file *filp, unsigned int cmd, unsigned long
 			pr_err("error: VPU_IOC_SET_REG copy_from_user failed\n");
 			return -EFAULT;
 		}
-
 		reg = reg_init(session, (void __user *)req.req, req.size);
 		if (NULL == reg) {
 			return -EFAULT;
@@ -819,7 +848,7 @@ static long vpu_service_ioctl(struct file *filp, unsigned int cmd, unsigned long
 			pr_err("error: VPU_IOC_GET_REG copy_from_user failed\n");
 			return -EFAULT;
 		} else {
-			int ret = wait_event_interruptible_timeout(session->wait, !list_empty(&session->done), VPU_TIMEOUT_DELAY);
+			int ret = wait_event_timeout(session->wait, !list_empty(&session->done), VPU_TIMEOUT_DELAY);
 			if (!list_empty(&session->done)) {
 				if (ret < 0) {
 					pr_err("warning: pid %d wait task sucess but wait_evernt ret %d\n", session->pid, ret);
@@ -871,7 +900,7 @@ static int vpu_service_check_hw(vpu_service_info *p, unsigned long hw_addr)
 	u32 enc_id = *tmp;
 	enc_id = (enc_id >> 16) & 0xFFFF;
 	pr_info("checking hw id %x\n", enc_id);
-	p->hw_info = NULL;
+    p->hw_info = NULL;
 	for (i = 0; i < ARRAY_SIZE(vpu_hw_set); i++) {
 		if (enc_id == vpu_hw_set[i].hw_id) {
 			p->hw_info = &vpu_hw_set[i];
@@ -984,7 +1013,7 @@ static int vpu_service_release(struct inode *inode, struct file *filp)
 		pr_err("error: vpu_service session %d still has %d task running when closing\n", session->pid, task_running);
 		msleep(50);
 	}
-	wake_up_interruptible_sync(&session->wait);
+	wake_up(&session->wait);
 
 	mutex_lock(&service.lock);
 	/* remove this filp from the asynchronusly notified filp's */
@@ -1040,7 +1069,12 @@ static void get_hw_info(void)
 	dec->sorensonSparkSupport = (configReg >> DWL_SORENSONSPARK_E) & 0x01U;
 	dec->refBufSupport  = (configReg >> DWL_REF_BUFF_E) & 0x01U;
 	dec->vp6Support     = (configReg >> DWL_VP6_E) & 0x01U;
+#if !defined(CONFIG_ARCH_RK319X)
+    /// invalidate max decode picture width value in rk319x vpu
 	dec->maxDecPicWidth = configReg & 0x07FFU;
+#else
+    dec->maxDecPicWidth = 3840;
+#endif
 
 	/* 2nd Config register */
 	configReg   = dec_dev.hwregs[VPU_DEC_HWCFG1];
@@ -1074,6 +1108,8 @@ static void get_hw_info(void)
 		dec->refBufSupport |= 8; /* enable HW support for offset */
 	}
 
+#if !defined(CONFIG_ARCH_RK319X)
+    /// invalidate fuse register value in rk319x vpu
 	{
 	VPUHwFuseStatus_t hwFuseSts;
 	/* Decoder fuse configuration */
@@ -1186,6 +1222,7 @@ static void get_hw_info(void)
 		if (!hwFuseSts.mvcSupportFuse)      dec->mvcSupport = MVC_NOT_SUPPORTED;
 	}
 	}
+#endif
 	configReg = enc_dev.hwregs[63];
 	enc->maxEncodedWidth = configReg & ((1 << 11) - 1);
 	enc->h264Enabled = (configReg >> 27) & 1;
@@ -1204,6 +1241,8 @@ static void get_hw_info(void)
 		printk("vpu_service set to auto frequency mode\n");
 		atomic_set(&service.freq_status, VPU_FREQ_BUT);
 	}
+	service.bug_dec_addr = cpu_is_rk30xx();
+	//printk("cpu 3066b bug %d\n", service.bug_dec_addr);
 }
 
 static irqreturn_t vdpu_irq(int irq, void *dev_id)
@@ -1222,7 +1261,7 @@ static irqreturn_t vdpu_irq(int irq, void *dev_id)
 			} while ((irq_status & 0x40001) == 0x40001);
 		}
 		/* clear dec IRQ */
-		writel(irq_status & (~DEC_INTERRUPT_BIT), dev->hwregs + DEC_INTERRUPT_REGISTER);
+		writel(irq_status & (~DEC_INTERRUPT_BIT|DEC_BUFFER_EMPTY_BIT), dev->hwregs + DEC_INTERRUPT_REGISTER);
 		atomic_add(1, &dev->irq_count_codec);
 	}
 
@@ -1319,7 +1358,12 @@ static irqreturn_t vepu_isr(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
+#ifdef CONFIG_PROC_FS
 static int __init vpu_service_proc_init(void);
+#else
+static inline int vpu_service_proc_init(void) { return 0; }
+#endif
+
 static int __init vpu_service_init(void)
 {
 	int ret;
@@ -1342,6 +1386,7 @@ static int __init vpu_service_init(void)
 	INIT_DELAYED_WORK(&service.power_off_work, vpu_power_off_work);
 
 	vpu_service_power_on();
+
 	ret = vpu_service_check_hw(&service, VCODEC_PHYS);
 	if (ret < 0) {
 		pr_err("error: hw info check faild\n");
@@ -1408,7 +1453,12 @@ err_hw_id_check:
 	return ret;
 }
 
+#ifdef CONFIG_PROC_FS
 static void __exit vpu_service_proc_release(void);
+#else
+#define vpu_service_proc_release() do {} while (0)
+#endif
+
 static void __exit vpu_service_exit(void)
 {
 	vpu_service_proc_release();
